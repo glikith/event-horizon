@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Horizon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'JetBrains+Mono', monospace; }
+        .serif-title { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="bg-[#F7F4EF] text-[#1A1C1E] min-h-screen flex flex-col selection:bg-[#FF4500] selection:text-white">
+    
+    <nav class="bg-[#F7F4EF] border-b-2 border-[#1A1C1E] sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-20 flex justify-between items-center">
+            <h1 class="serif-title text-3xl font-bold tracking-tight text-[#1A1C1E]">Event Horizon</h1>
+            <div class="flex items-center space-x-6">
+                <div id="user-display" class="hidden text-xs uppercase font-bold tracking-wider bg-white px-4 py-2 border border-[#1A1C1E] shadow-[2px_2px_0px_#1A1C1E]"></div>
+                <button id="logout-btn" onclick="logout()" class="hidden text-xs uppercase font-bold text-[#FF4500] hover:underline tracking-wider">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl w-full mx-auto p-4 md:p-12 flex-grow">
+        <div id="auth-section" class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+            <div class="bg-white p-8 border-2 border-[#1A1C1E] shadow-[6px_6px_0px_#1A1C1E]">
+                <h2 class="serif-title text-2xl font-bold mb-8 italic">Create Account</h2>
+                <div class="space-y-6">
+                    <input id="reg-user" type="text" placeholder="Username" class="w-full bg-transparent border-b border-[#1A1C1E] py-2 text-sm focus:outline-none focus:border-[#FF4500] placeholder:text-gray-400">
+                    <input id="reg-pass" type="password" placeholder="Password" class="w-full bg-transparent border-b border-[#1A1C1E] py-2 text-sm focus:outline-none focus:border-[#FF4500] placeholder:text-gray-400">
+                    <label class="flex items-center space-x-3 cursor-pointer py-2">
+                        <input id="reg-admin" type="checkbox" class="w-4 h-4 rounded-none border-[#1A1C1E] text-[#FF4500] focus:ring-0 accent-[#FF4500]">
+                        <span class="text-xs uppercase font-bold tracking-wider text-gray-600">Request Admin Privileges</span>
+                    </label>
+                    <button onclick="register()" class="w-full bg-[#FF4500] text-white border-2 border-[#1A1C1E] py-3 text-xs uppercase font-bold tracking-widest shadow-[4px_4px_0px_#1A1C1E] hover:bg-orange-600 active:translate-y-[2px] active:translate-x-[2px] active:shadow-[2px_2px_0px_#1A1C1E] transition-all">Sign Up</button>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 border-2 border-[#1A1C1E] shadow-[6px_6px_0px_#1A1C1E]">
+                <h2 class="serif-title text-2xl font-bold mb-8 italic">Sign In</h2>
+                <form onsubmit="login(event)" class="space-y-6">
+                    <input id="login-user" type="text" placeholder="Username" class="w-full bg-transparent border-b border-[#1A1C1E] py-2 text-sm focus:outline-none focus:border-[#FF4500] placeholder:text-gray-400">
+                    <input id="login-pass" type="password" placeholder="Password" class="w-full bg-transparent border-b border-[#1A1C1E] py-2 text-sm focus:outline-none focus:border-[#FF4500] placeholder:text-gray-400">
+                    <button type="submit" class="w-full bg-[#1A1C1E] text-white border-2 border-[#1A1C1E] py-3 text-xs uppercase font-bold tracking-widest shadow-[4px_4px_0px_rgba(0,0,0,0.2)] hover:bg-black active:translate-y-[2px] active:translate-x-[2px] active:shadow-[2px_2px_0px_rgba(0,0,0,0.2)] transition-all">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="dashboard" class="hidden space-y-16">
+            <section class="bg-white p-8 border-2 border-[#1A1C1E]">
+                <h2 class="serif-title text-3xl font-bold mb-8 border-b-2 border-[#1A1C1E] pb-4 flex items-center justify-between">
+                    <span>Browse Events</span>
+                    <span class="text-sm font-sans font-normal text-gray-400 tracking-wider font-mono">[01]</span>
+                </h2>
+                <div id="event-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            </section>
+
+            <section class="bg-white p-8 border-2 border-[#1A1C1E]">
+                <h2 class="serif-title text-3xl font-bold mb-8 border-b-2 border-[#1A1C1E] pb-4 flex items-center justify-between">
+                    <span>My Bookings</span>
+                    <span class="text-sm font-sans font-normal text-gray-400 tracking-wider font-mono">[02]</span>
+                </h2>
+                <div id="my-tickets" class="overflow-x-auto"></div>
+            </section>
+
+            <section id="admin-panel" class="hidden bg-white p-8 border-2 border-dashed border-[#FF4500]">
+                <h2 class="serif-title text-3xl font-bold mb-8 text-[#FF4500] flex items-center justify-between">
+                    <span>Admin Controls</span>
+                    <span class="text-sm font-sans font-normal text-[#FF4500]/50 tracking-wider font-mono">[SU]</span>
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <input id="new-id" type="number" placeholder="Event ID" class="bg-transparent border-b border-[#1A1C1E] p-2 text-sm focus:outline-none focus:border-[#FF4500]">
+                    <input id="new-name" type="text" placeholder="Event Name" class="bg-transparent border-b border-[#1A1C1E] p-2 text-sm focus:outline-none focus:border-[#FF4500]">
+                    <input id="new-date" type="text" placeholder="YYYY-MM-DD" class="bg-transparent border-b border-[#1A1C1E] p-2 text-sm focus:outline-none focus:border-[#FF4500]">
+                    <input id="new-qty" type="number" placeholder="Total Capacity" class="bg-transparent border-b border-[#1A1C1E] p-2 text-sm focus:outline-none focus:border-[#FF4500]">
+                    <button onclick="addEvent()" class="md:col-span-4 bg-[#1A1C1E] text-white border-2 border-[#1A1C1E] py-3 text-xs uppercase font-bold tracking-widest hover:bg-black active:translate-y-[1px] transition-all">Deploy System Event</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="bg-[#F7F4EF] border-t border-gray-300 py-6 text-center text-xs uppercase tracking-wider text-gray-500">
+        <div class="max-w-6xl mx-auto px-4">
+            Made by <a href="https://github.com/glikith" target="_blank" rel="noopener noreferrer" class="text-[#1A1C1E] font-bold underline hover:text-[#FF4500] transition-colors">Gummadi Likith</a>
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = "http://localhost:8080/api";
+        let currentUser = JSON.parse(localStorage.getItem('eventHorizonUser'));
+
+        window.onload = () => {
+            if (currentUser) {
+                showDashboard();
+            }
+        };
+
+        function showDashboard() {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('logout-btn').classList.remove('hidden');
+            document.getElementById('user-display').innerText = `${currentUser.username} ${currentUser.isAdmin ? '(Admin)' : ''}`;
+            document.getElementById('user-display').classList.remove('hidden');
+            if (currentUser.isAdmin) document.getElementById('admin-panel').classList.remove('hidden');
+            loadAll();
+        }
+
+        function logout() {
+            localStorage.removeItem('eventHorizonUser');
+            currentUser = null;
+            location.reload(); 
+        }
+
+        async function register() {
+            const body = {
+                username: document.getElementById('reg-user').value,
+                password: document.getElementById('reg-pass').value,
+                isAdmin: document.getElementById('reg-admin').checked.toString()
+            };
+            const res = await fetch(`${API_URL}/register`, { method: 'POST', body: JSON.stringify(body) });
+            const data = await res.json();
+            alert(data.message || data.error);
+        }
+
+        async function login(e) {
+            if(e) e.preventDefault();
+            const body = { 
+                username: document.getElementById('login-user').value, 
+                password: document.getElementById('login-pass').value 
+            };
+            const res = await fetch(`${API_URL}/login`, { method: 'POST', body: JSON.stringify(body) });
+            const data = await res.json();
+            if (res.ok) {
+                currentUser = data;
+                localStorage.setItem('eventHorizonUser', JSON.stringify(data));
+                showDashboard();
+            } else alert(data.error);
+        }
+
+        async function loadAll() {
+            await loadEvents();
+            await loadMyTickets();
+        }
+
+        async function loadEvents() {
+            const res = await fetch(`${API_URL}/events`);
+            const events = await res.json();
+            const list = document.getElementById('event-list');
+            list.innerHTML = events.map(e => `
+                <div class="bg-[#F7F4EF] p-6 border border-[#1A1C1E] flex flex-col justify-between shadow-[4px_4px_0px_#1A1C1E]">
+                    <div>
+                        <h3 class="serif-title font-bold text-xl mb-1 text-[#1A1C1E]">${e.name}</h3>
+                        <p class="text-xs text-gray-500 font-mono mb-6">DATE // ${e.date}</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-4 border-t border-gray-300/60">
+                        <span class="text-[10px] font-bold tracking-widest text-[#1A1C1E]/60 bg-white border border-gray-300 px-2 py-1">${e.totalTickets - e.ticketsBooked} AVAILABLE</span>
+                        <div class="space-x-2 flex">
+                            <button onclick="book(${e.id})" class="bg-[#FF4500] text-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider border border-[#1A1C1E] shadow-[2px_2px_0px_#1A1C1E] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none transition-all">Book</button>
+                            ${currentUser.isAdmin ? `<button onclick="deleteEvent(${e.id})" class="bg-transparent text-red-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wider border border-red-600 hover:bg-red-50 transition-colors">Delete</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadMyTickets() {
+            const res = await fetch(`${API_URL}/tickets?username=${currentUser.username}`);
+            const tickets = await res.json();
+            const list = document.getElementById('my-tickets');
+            if (tickets.length === 0) { list.innerHTML = '<p class="text-gray-400 italic text-sm py-4">No active enterprise entries found.</p>'; return; }
+            list.innerHTML = `
+                <table class="w-full text-left text-xs uppercase tracking-wider">
+                    <thead>
+                        <tr class="text-gray-500 border-b-2 border-[#1A1C1E]">
+                            <th class="py-4 font-bold">Ticket Registry ID</th>
+                            <th class="py-4 font-bold">Target Event ID</th>
+                            <th class="py-4 font-bold text-right">Operational Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">${tickets.map(t => `
+                        <tr>
+                            <td class="py-4 font-mono font-bold text-[#1A1C1E]">${t.ticketId}</td>
+                            <td class="py-4 font-mono text-gray-600">${t.eventId}</td>
+                            <td class="text-right py-4"><button onclick="cancelTicket(${t.ticketId})" class="text-[#FF4500] font-bold hover:underline">Void Ticket</button></td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>`;
+        }
+
+        async function book(id) {
+            const res = await fetch(`${API_URL}/tickets`, { method: 'POST', body: JSON.stringify({ eventId: id.toString(), username: currentUser.username, quantity: "1" })});
+            const data = await res.json();
+            if(data.message) loadAll();
+            else alert(data.error);
+        }
+
+        async function cancelTicket(id) {
+            const res = await fetch(`${API_URL}/tickets`, { method: 'DELETE', body: JSON.stringify({ ticketId: id.toString(), username: currentUser.username })});
+            const data = await res.json();
+            loadAll();
+        }
+
+        async function addEvent() {
+            const body = {
+                id: document.getElementById('new-id').value,
+                name: document.getElementById('new-name').value,
+                date: document.getElementById('new-date').value,
+                totalTickets: document.getElementById('new-qty').value
+            };
+            const res = await fetch(`${API_URL}/events`, { method: 'POST', body: JSON.stringify(body) });
+            const data = await res.json();
+            if(data.message) {
+                loadEvents();
+                ['new-id', 'new-name', 'new-date', 'new-qty'].forEach(id => document.getElementById(id).value = '');
+            } else alert(data.error);
+        }
+
+        async function deleteEvent(id) {
+            const res = await fetch(`${API_URL}/events`, { method: 'DELETE', body: JSON.stringify({ id: id.toString() })});
+            const data = await res.json();
+            loadEvents();
+        }
+    </script>
+</body>
+</html>
